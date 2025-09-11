@@ -23,10 +23,11 @@ class env extends uvm_env;
     `uvm_component_utils(env);
     
    sequencer sequencer_h;
-   driver driver_h;
-   monitor monitor_h;
+   uart_driver uart_driver_h;
+   uart_monitor uart_monitor_h;
    scoreboard scoreboard_h;
-   monitor monitor_h;
+   axi_driver axi_driver_h;
+   axi_monitor axi_monitor_h;
    
    function new (string name, uvm_component parent);
       super.new(name,parent);
@@ -34,17 +35,18 @@ class env extends uvm_env;
 
    function void build_phase(uvm_phase phase);
       sequencer_h = new("sequencer_h",this);
-      driver_h = driver::type_id::create("driver_h",this);
-      monitor_h = monitor::type_id::create("monitor_h",this);
-      coverage_h    = coverage::type_id::create ("coverage_h",this);
+      uart_driver_h = uart_driver::type_id::create("uart_driver_h",this);
+      axi_driver_h = axi_driver::type_id::create("axi_driver_h",this);
+      uart_monitor_h = uart_monitor::type_id::create("uart_monitor_h",this);
+      axi_monitor_h = axi_monitor::type_id::create("axi_monitor_h",this);
       scoreboard_h  = scoreboard::type_id::create("scoreboard",this);
    endfunction : build_phase
 
    function void connect_phase(uvm_phase phase);
 
-      driver_h.seq_item_port.connect(sequencer_h.seq_item_export);
+      uart_driver_h.seq_item_port.connect(sequencer_h.seq_item_export);
+      axi_driver_h.seq_item_port.connect(sequencer_h.seq_item_export);
 
-      monitor_h.ap.connect(coverage_h.analysis_export);
       monitor_h.ap.connect(scoreboard_h.data_f.analysis_export);
    endfunction : connect_phase
 endclass
