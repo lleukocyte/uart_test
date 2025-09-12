@@ -1,28 +1,10 @@
 `timescale 1ns / 1ns
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 24.08.2025 18:48:31
-// Design Name: 
-// Module Name: top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+
 module top;
    axi_if axi();
    uart_if uartif();
    
-   uart DUT (.s_axi_araddr(axi.s_axi_araddr), .s_axi_arready(axi.s_axi_arready), .s_axi_arvalid(axi.s_axi_arvalid),
+   axi_uart DUT (.s_axi_araddr(axi.s_axi_araddr), .s_axi_arready(axi.s_axi_arready), .s_axi_arvalid(axi.s_axi_arvalid),
              .s_axi_awaddr(axi.s_axi_awaddr), .s_axi_awready(axi.s_axi_awready), .s_axi_awvalid(axi.s_axi_awvalid),
              .s_axi_bresp(axi.s_axi_bresp), .s_axi_bready(axi.s_axi_bready), .s_axi_bvalid(axi.s_axi_bvalid),
              .s_axi_rdata(axi.s_axi_rdata), .s_axi_rready(axi.s_axi_rready), .s_axi_rresp(axi.s_axi_rresp), .s_axi_rvalid(axi.s_axi_rvalid),

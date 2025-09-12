@@ -1,28 +1,9 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 03.09.2025 23:24:20
-// Design Name: 
-// Module Name: sequencer
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+`timescale 1ns / 1ns
 
-class sequencer extends uvm_sequencer #(data_item);
+class sequencer extends uvm_sequencer #(sequence_item);
   `uvm_component_utils(sequencer)
  
-  uvm_analysis_port #(data_item) item_ap;
+  uvm_analysis_port #(sequence_item) item_ap;
   
   function new (string name, uvm_component parent);
     super.new(name, parent);
