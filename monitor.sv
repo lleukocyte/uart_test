@@ -17,11 +17,12 @@ class monitor extends uvm_monitor;
     
     function void build_phase(uvm_phase phase);
       super.build_phase(phase);
+      // ?uvm_config_db #(bit)::get(null, "*", "checks_en", checks_en);
       if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uartif", uartif))
         `uvm_fatal("MONITOR", "Failed to get uart interface")
         
       if(!uvm_config_db #(virtual axi_if)::get(null, "*", "axi", axi))
-        `uvm_fatal("DRIVER", "Failed to get axi interface")
+        `uvm_fatal("MONITOR", "Failed to get axi interface")
    endfunction
     
     virtual task run_phase();

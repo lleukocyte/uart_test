@@ -34,8 +34,9 @@ class driver extends uvm_driver #(sequence_item);
       end
    endtask
    
-   task drive_item (input sequence_item item);
-    //dsd
+   task drive_item (input sequence_item item); // каждый seq в оба направления
+      axi.set_format(item.wlen, item.nstop_bits, parity, is_even, divisor);
+      axi
    endtask : drive_item
    
 endclass

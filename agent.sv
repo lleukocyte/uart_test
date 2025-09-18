@@ -8,10 +8,10 @@ class agent extends uvm_agent;
     
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase)
-        monitor = simple_monitor::type_id::create("monitor",this);
+        monitor = monitor::type_id::create("monitor",this);
         if (is_active == UVM_ACTIVE) begin
-            sequencer = uvm_sequencer#(simple_item)::type_id::create("sequencer_h", this);
-            driver = simple_driver::type_id::create("driver_h", this);
+            sequencer = sequencer::type_id::create("sequencer_h", this);
+            driver = driver::type_id::create("driver_h", this);
         end
     endfunction : build_phase
     

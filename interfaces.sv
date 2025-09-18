@@ -44,7 +44,10 @@ task set_waddr(input logic [12:0] addr);
     s_axi_awready = 1'b1;
 endtask : set_waddr
 
-task write_data();
+task write_data(input logic [13:0] data);
+    if (addr[13]) begin
+        s_axi_wdata = data[12:0]; 
+    end
     @(posedge s_axi_aclk);
     s_axi_wvalid = 1'b1;
     s_axi_wstrb = 4'b0001;
@@ -68,7 +71,7 @@ task set_lcr(input int wlen, input bit nstop_bits, input bit parity, input bit i
     s_axi_wdata[4:2] = {is_even, parity, nstop_bits};
     s_axi_wdata[6:5] = 2'b00;
     s_axi_wdata[7] = is_divisor;
-    write_data();
+    write_data(14'h0);
 endtask : set_lcr
 
 task set_format(input int wlen, input bit nstop_bits, input bit parity, input bit is_even, input int divisor);
@@ -89,23 +92,23 @@ task enable_fifo(input int trigger_level);
     s_axi_wdata[3] = 1'b1;
     s_axi_wdata[2:1] = 2'b00;
     s_axi_wdata[0] = 1'b1;
-    write_data();
+    write_data(14'h0);
 endtask : enable_fifo
 
 task enable_interrupts();
     set_waddr(13'h1004);
     s_axi_wdata[2:0] = 3'b111;
     s_axi_wdata[7:3] = 5'h00;
-    write_data();
+    write_data(14'h0);
 endtask : enable_interrupts
 
 task set_baud_rate(int div);
     set_waddr(13'h1000);
     s_axi_wdata[7:0] = div[7:0];
-    write_data();
+    write_data(14'h0);
     set_waddr(13'h1004);
     s_axi_wdata[7:0] = div[15:8];
-    write_data();
+    write_data(14'h0);
 endtask : set_baud_rate
 
 initial begin
