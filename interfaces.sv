@@ -1,11 +1,9 @@
 `timescale 1ns / 1ns
 
-interface axi_if #(parameter real PERIOD = 10.0);
+interface axi_if;
 
 bit s_axi_aclk;
 bit s_axi_aresetn;
-logic freeze;
-logic ip2intc_irpt;
 
 logic [12:0] s_axi_araddr;
 logic s_axi_arready;
@@ -36,84 +34,43 @@ task reset;
     s_axi_aresetn = 1'b1;
 endtask : reset
 
-task set_waddr(input logic [12:0] addr);
+task set_waddr(input logic [3:0] addr);
     @(posedge s_axi_aclk);
-    s_axi_awvalid = 1'b1;
-    s_axi_awaddr = addr;
-    @(posedge s_axi_aclk);
-    s_axi_awready = 1'b1;
+    s_axi_awvalid <= 1'b1;
+    s_axi_awaddr <= addr;
 endtask : set_waddr
 
-task write_data(input logic [13:0] data);
-    if (addr[13]) begin
-        s_axi_wdata = data[12:0]; 
-    end
+task write_data(input logic [31:0] data);
     @(posedge s_axi_aclk);
-    s_axi_wvalid = 1'b1;
-    s_axi_wstrb = 4'b0001;
+    s_axi_awvalid <= 1'b1;
+    s_axi_wdata <= data;
+    s_axi_wvalid <= 1'b1;
+    s_axi_bready <= 1'b1;
+    s_axi_wstrb <= 4'b0001;
     @(posedge s_axi_aclk);
-    s_axi_wready = 1'b1;
     @(posedge s_axi_aclk);
-    s_axi_wready = 1'b0;
-    s_axi_wvalid = 1'b0;
-    s_axi_awready = 1'b0;
-    s_axi_awvalid = 1'b0;
+    s_axi_wvalid <= 1'b0;
+    s_axi_awvalid <= 1'b0;
 endtask : write_data
 
-task set_lcr(input int wlen, input bit nstop_bits, input bit parity, input bit is_even, input bit is_divisor);
-    set_waddr(13'h100c); 
-    case (wlen)
-        5 : s_axi_wdata[1:0] = 2'b00;
-        6 : s_axi_wdata[1:0] = 2'b01;
-        7 : s_axi_wdata[1:0] = 2'b10;
-        8 : s_axi_wdata[1:0] = 2'b11;
-    endcase
-    s_axi_wdata[4:2] = {is_even, parity, nstop_bits};
-    s_axi_wdata[6:5] = 2'b00;
-    s_axi_wdata[7] = is_divisor;
-    write_data(14'h0);
-endtask : set_lcr
+task set_raddr(input logic [3:0] addr);
+    @(posedge s_axi_aclk);
+    s_axi_arvalid <= 1'b1;
+    s_axi_araddr <= addr;
+endtask : set_raddr
 
-task set_format(input int wlen, input bit nstop_bits, input bit parity, input bit is_even, input int divisor);
-    set_lcr(wlen, nstop_bits, parity, is_even, 1);
-    set_baud_rate(divisor);
-    set_lcr(wlen, nstop_bits, parity, is_even, 0);
-endtask : set_format
-
-task enable_fifo(input int trigger_level);
-    set_waddr(13'h1008);
-    case (trigger_level)
-        1 : s_axi_wdata[7:6] = 2'b00;
-        4 : s_axi_wdata[7:6] = 2'b01;
-        8 : s_axi_wdata[7:6] = 2'b10;
-        14 : s_axi_wdata[7:6] = 2'b11;
-    endcase
-    s_axi_wdata[5:4] = 2'b00;
-    s_axi_wdata[3] = 1'b1;
-    s_axi_wdata[2:1] = 2'b00;
-    s_axi_wdata[0] = 1'b1;
-    write_data(14'h0);
-endtask : enable_fifo
-
-task enable_interrupts();
-    set_waddr(13'h1004);
-    s_axi_wdata[2:0] = 3'b111;
-    s_axi_wdata[7:3] = 5'h00;
-    write_data(14'h0);
-endtask : enable_interrupts
-
-task set_baud_rate(int div);
-    set_waddr(13'h1000);
-    s_axi_wdata[7:0] = div[7:0];
-    write_data(14'h0);
-    set_waddr(13'h1004);
-    s_axi_wdata[7:0] = div[15:8];
-    write_data(14'h0);
-endtask : set_baud_rate
+task read_data(output logic [31:0] data);
+    @(posedge s_axi_aclk);
+    s_axi_rready <= 1'b1;
+    @(posedge s_axi_rvalid);
+    data <= s_axi_rdata;
+    s_axi_arvalid <= 1'b0;
+    s_axi_rready <= 1'b0;
+endtask : read_data
 
 initial begin
     s_axi_aclk = 1'b0;
-    forever #(PERIOD/2) s_axi_aclk = ~s_axi_aclk;
+    forever #5 s_axi_aclk = ~s_axi_aclk;
 end
 
 endinterface
@@ -121,19 +78,12 @@ endinterface
 
 interface uart_if;
 
-logic baudoutn;
-logic ctsn;
-logic dcdn;
-logic ddis;
-logic dsrn;
-logic dtrn;
-logic out1n;
-logic out2n;
-logic rin;
-logic rtsn;
-logic sin;
-logic rxrdyn;
-logic sout;
-logic txrdyn;
+logic rx;
+logic tx;
+logic interrupt;
+
+initial begin
+    rx = 1'b1;
+end
 
 endinterface

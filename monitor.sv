@@ -6,7 +6,11 @@ class monitor extends uvm_monitor;
     uvm_analysis_port #(sequence_item) item_ap;
     virtual uart_if uartif;
     virtual axi_if axi;
+    bit parity;
+    bit calc_parity = 1'b0;
     sequence_item s_item;
+    event rx_done, tx_done;
+    bit rxd, txd;
     
     bit checks_en = 1;
     
@@ -17,26 +21,66 @@ class monitor extends uvm_monitor;
     
     function void build_phase(uvm_phase phase);
       super.build_phase(phase);
-      // ?uvm_config_db #(bit)::get(null, "*", "checks_en", checks_en);
       if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uartif", uartif))
         `uvm_fatal("MONITOR", "Failed to get uart interface")
         
       if(!uvm_config_db #(virtual axi_if)::get(null, "*", "axi", axi))
-        `uvm_fatal("MONITOR", "Failed to get axi interface")
+        `uvm_fatal("DRIVER", "Failed to get axi interface")
    endfunction
     
     virtual task run_phase();
-        forever begin
-            @(posedge xmi.sig_clock);
-            // Collect the data from the bus into trans_collected.
-            if (checks_en)
-                perform_checks();
-            item_ap.write(s_item);
-        end
+        fork
+            forever begin
+                @(negedge uartif.tx);
+                #(BAUDTIME/2);
+                calc_parity = 1'b0;
+                for (int i=0; i < 8; i++) begin
+                    #BAUDTIME;
+                    calc_parity = calc_parity ^ uartif.tx;
+                    s_item.tx_data[i] = uartif.tx;
+                end
+                #BAUDTIME;
+                parity = uartif.tx;
+                if (checks_en)
+                    check_tx();
+                ->tx_done;
+            end
+            
+            forever begin
+                @(negedge uartif.tx);
+                for (int i=0; i < 8; i++) begin
+                    s_item.data[i] = uartif.tx;
+                end
+                if (checks_en)
+                    check_rx();
+                ->rx_done;
+            end
+            
+            forever begin
+                @(posedge tx_done);
+                txd = 1'b1;
+            end
+
+            forever begin
+                @(posedge rx_done);
+                rxd = 1'b1;
+            end
+            
+            forever begin
+                wait(rxd && txd);
+                item_ap.write(s_item);
+                rxd = 1'b0;
+                txd = 1'b0;
+            end
+        join_none
     endtask : run_phase
     
-    function void perform_checks();
+    function void check_tx();
         // Perform data checks on trans_collected.
-    endfunction : perform_checks
+    endfunction : check_tx
+    
+    function void check_rx();
+        // Perform data checks on trans_collected.
+    endfunction : check_rx
     
 endclass

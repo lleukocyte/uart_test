@@ -6,6 +6,7 @@ class driver extends uvm_driver #(sequence_item);
    sequence_item s_item;
    virtual uart_if uart;
    virtual axi_if axi;
+   bit parity = 1'b0;
  
    function new (string name, uvm_component parent);
       super.new(name, parent);
@@ -34,9 +35,27 @@ class driver extends uvm_driver #(sequence_item);
       end
    endtask
    
-   task drive_item (input sequence_item item); // каждый seq в оба направления
-      axi.set_format(item.wlen, item.nstop_bits, parity, is_even, divisor);
-      axi
+   task drive_item (input sequence_item item);
+        fork
+            begin
+                set_waddr(4'h4);
+                write_data({24'h000, item.tx_data});
+            end
+
+            begin
+                uart.rx = 1'b0;
+                #BAUDTIME;
+                for (int i=0; i < 8; i++) begin
+                    parity = parity ^ item.rx_data[i];
+                    uart.rx = item.rx_data[i];
+                    #BAUDTIME;
+                end
+                uart.rx = parity;
+                #BAUDTIME;
+                uart.rx = 1'b1;
+                #BAUDTIME;
+            end
+        join_none
    endtask : drive_item
    
 endclass
