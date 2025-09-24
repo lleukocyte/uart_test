@@ -1,5 +1,8 @@
 `timescale 1ns / 1ns
 
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+
 class sequencer extends uvm_sequencer #(sequence_item);
   `uvm_component_utils(sequencer)
  
@@ -10,7 +13,7 @@ class sequencer extends uvm_sequencer #(sequence_item);
   endfunction
   
   function void build_phase(uvm_phase phase);
-    super.build_phase(phase);    
+    super.build_phase(phase);
     item_ap = new("item_ap", this);
   endfunction
   

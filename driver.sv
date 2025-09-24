@@ -1,12 +1,17 @@
 `timescale 1ns / 1ns
 
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+
 class driver extends uvm_driver #(sequence_item);
+   localparam int BAUDTIME = 7850;
    `uvm_component_utils(driver)
 
    sequence_item s_item;
-   virtual uart_if uart;
+   virtual uart_if uartif;
    virtual axi_if axi;
    bit parity = 1'b0;
+   bit is_first = 1'b1;
  
    function new (string name, uvm_component parent);
       super.new(name, parent);
@@ -15,7 +20,7 @@ class driver extends uvm_driver #(sequence_item);
    function void build_phase(uvm_phase phase);
       super.build_phase(phase);
       
-      if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uart", uart))
+      if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uartif", uartif))
         `uvm_fatal("DRIVER", "Failed to get uart interface")
         
       if(!uvm_config_db #(virtual axi_if)::get(null, "*", "axi", axi))
@@ -38,24 +43,32 @@ class driver extends uvm_driver #(sequence_item);
    task drive_item (input sequence_item item);
         fork
             begin
-                set_waddr(4'h4);
-                write_data({24'h000, item.tx_data});
+                axi.set_waddr(4'h4);
+                axi.write_data({24'h000, item.tx_data});
             end
 
             begin
-                uart.rx = 1'b0;
-                #BAUDTIME;
-                for (int i=0; i < 8; i++) begin
-                    parity = parity ^ item.rx_data[i];
-                    uart.rx = item.rx_data[i];
+                if (is_first) begin
+                    is_first = 1'b0;
+                    uartif.rx = 1'b0;
+                    #BAUDTIME;
+                    uartif.rx = 1'b1;
                     #BAUDTIME;
                 end
-                uart.rx = parity;
+                uartif.rx = 1'b0;
                 #BAUDTIME;
-                uart.rx = 1'b1;
+                parity = 1'b0;
+                for (int i=0; i < 8; i++) begin
+                    parity = parity ^ item.rx_data[i];
+                    uartif.rx = item.rx_data[i];
+                    #BAUDTIME;
+                end
+                uartif.rx = parity;
+                #BAUDTIME;
+                uartif.rx = 1'b1;
                 #BAUDTIME;
             end
-        join_none
+        join
    endtask : drive_item
    
 endclass

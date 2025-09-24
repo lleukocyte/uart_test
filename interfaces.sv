@@ -5,11 +5,11 @@ interface axi_if;
 bit s_axi_aclk;
 bit s_axi_aresetn;
 
-logic [12:0] s_axi_araddr;
+logic [3:0] s_axi_araddr;
 logic s_axi_arready;
 logic s_axi_arvalid;
 
-logic [12:0] s_axi_awaddr;
+logic [3:0] s_axi_awaddr;
 logic s_axi_awready;
 logic s_axi_awvalid;
 
@@ -29,6 +29,8 @@ logic s_axi_wvalid;
 
 task reset;
     s_axi_aresetn = 1'b0;
+    s_axi_arvalid = 1'b0;
+    s_axi_rready = 1'b0;
     @(negedge s_axi_aclk);
     @(negedge s_axi_aclk);
     s_axi_aresetn = 1'b1;
@@ -54,17 +56,22 @@ task write_data(input logic [31:0] data);
 endtask : write_data
 
 task set_raddr(input logic [3:0] addr);
+    s_axi_arvalid = 1'b1;
+    s_axi_araddr = addr;
+    wait(s_axi_arready == 1);
     @(posedge s_axi_aclk);
-    s_axi_arvalid <= 1'b1;
-    s_axi_araddr <= addr;
+    s_axi_arvalid = 1'b0;
+    //@(posedge s_axi_aclk);
+    //s_axi_arvalid <= 1'b1;
+    //s_axi_araddr <= addr;
 endtask : set_raddr
 
-task read_data(output logic [31:0] data);
+task automatic read_data(ref logic [31:0] data);
+    s_axi_rready = 1'b1;
+    wait(s_axi_rvalid == 1);
     @(posedge s_axi_aclk);
-    s_axi_rready <= 1'b1;
-    @(posedge s_axi_rvalid);
-    data <= s_axi_rdata;
-    s_axi_arvalid <= 1'b0;
+    data = s_axi_rdata;
+    //s_axi_arvalid <= 1'b0;
     s_axi_rready <= 1'b0;
 endtask : read_data
 
