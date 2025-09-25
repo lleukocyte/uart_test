@@ -44,7 +44,7 @@ initial begin
   axi.set_waddr(4'hC);
   axi.write_data(32'h0010);
   #100;
-  uartif.rx = 1'b0;
+  /*uartif.rx = 1'b0;
   #BAUDTIME;
   uartif.rx = 1'b1;
   #BAUDTIME;
@@ -79,7 +79,7 @@ initial begin
   #(BAUDTIME);
   axi.set_raddr(4'h0);
   axi.read_data(data);
-  /*
+  
   axi.set_waddr(4'h4);
   axi.write_data(32'h00a5);
   axi.set_waddr(4'h4);

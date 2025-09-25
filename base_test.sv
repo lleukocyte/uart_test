@@ -4,8 +4,8 @@ import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 class base_test extends uvm_test;
-    //`uvm_component_utils(base_test)
-    typedef uvm_component_registry #(base_test, "base_test") type_id;
+    `uvm_component_utils(base_test)
+    //typedef uvm_component_registry #(base_test, "base_test") type_id;
     env env_h;
     sequencer sequencer_h;
     simple_sequence seq;

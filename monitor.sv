@@ -11,17 +11,16 @@ class monitor extends uvm_monitor;
     uvm_analysis_port #(sequence_item) item_ap;
     virtual uart_if uartif;
     virtual axi_if axi;
-    bit parity;
     bit calc_parity = 1'b0;
     sequence_item s_item;
-    event rx_done, tx_done;
-    bit rxd, txd;
-    bit is_first = 1'b1;
+    bit rx_done = 1'b0;
+    bit tx_done = 1'b0;
+    bit rx_is_first = 1'b1;
+    bit tx_is_first = 1'b1;
     
     bit [31:0] rx_rcvd;
+    bit [7:0] rx_sent;
     bit [7:0] tx_rcvd;
-    
-    int checks_en;
     
     function new (string name, uvm_component parent);
         super.new(name, parent);
@@ -31,7 +30,6 @@ class monitor extends uvm_monitor;
     
     function void build_phase(uvm_phase phase);
       super.build_phase(phase);
-      uvm_config_db #(int)::get(null, "*", "checks_en", checks_en);
       if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uartif", uartif))
         `uvm_fatal("MONITOR", "Failed to get uart interface")
         
@@ -42,9 +40,12 @@ class monitor extends uvm_monitor;
     virtual task run_phase(uvm_phase phase);
         fork
             forever begin
+                @(posedge axi.s_axi_wready);
+                s_item.tx_data = axi.s_axi_wdata[7:0];
+                
                 @(negedge uartif.tx);
-                if (is_first) begin
-                    is_first = 1'b0;
+                if (tx_is_first) begin
+                    tx_is_first = 1'b0;
                     @(negedge uartif.tx);                
                 end
                 #(BAUDTIME/2);
@@ -55,46 +56,39 @@ class monitor extends uvm_monitor;
                     tx_rcvd[i] = uartif.tx;
                 end
                 #BAUDTIME;
-                parity = uartif.tx;
-                if (checks_en)
-                    check_tx();
-                ->tx_done;
+                s_item.parity = uartif.tx;
+                s_item.calc_parity = calc_parity;
+                s_item.tx_rcvd = tx_rcvd;
+                tx_done = 1'b1;
             end
             
             forever begin
+                @(negedge uartif.rx);
+                if (rx_is_first) begin
+                    rx_is_first = 1'b0;
+                    @(negedge uartif.rx);                
+                end
+                #(BAUDTIME/2);
+                for (int i=0; i < 8; i++) begin
+                    #BAUDTIME;
+                    rx_sent[i] = uartif.rx;
+                end
+                s_item.rx_data = rx_sent;
+                
                 @(negedge uartif.interrupt);
                 axi.set_raddr(4'h0);
                 axi.read_data(rx_rcvd);
-                if (checks_en)
-                    check_rx();
-                ->rx_done;
+                s_item.rx_rcvd = rx_rcvd[7:0];
+                rx_done = 1'b1;
             end
             
             forever begin
-                @(posedge tx_done);
-                txd = 1'b1;
-            end
-
-            forever begin
-                @(posedge rx_done);
-                rxd = 1'b1;
-            end
-            
-            forever begin
-                wait(rxd && txd);
+                wait(rx_done && tx_done);
                 item_ap.write(s_item);
-                rxd = 1'b0;
-                txd = 1'b0;
+                rx_done = 1'b0;
+                tx_done = 1'b0;
             end
         join_none
     endtask : run_phase
-    
-    function void check_tx();
-        // Perform data checks on trans_collected.
-    endfunction : check_tx
-    
-    function void check_rx();
-        // Perform data checks on trans_collected.
-    endfunction : check_rx
     
 endclass

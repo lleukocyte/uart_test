@@ -25,6 +25,6 @@ class agent extends uvm_agent;
         //monitor_h.item_ap.connect(scoreboard_h.data_f.analysis_export);
         if (is_active == UVM_ACTIVE) begin
             driver_h.seq_item_port.connect(sequencer_h.seq_item_export);
-    end
+        end
     endfunction : connect_phase
 endclass

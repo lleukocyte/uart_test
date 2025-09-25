@@ -7,6 +7,10 @@ class sequence_item extends uvm_sequence_item;
     `uvm_object_utils(sequence_item)
     rand bit [7:0] rx_data;
     rand bit [7:0] tx_data;
+    bit [7:0] rx_rcvd;
+    bit [7:0] tx_rcvd;
+    bit parity;
+    bit calc_parity;
     
     function new(string name);
         super.new(name);

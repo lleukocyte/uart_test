@@ -2,8 +2,8 @@
 
 interface axi_if;
 
-bit s_axi_aclk;
-bit s_axi_aresetn;
+logic s_axi_aclk;
+logic s_axi_aresetn;
 
 logic [3:0] s_axi_araddr;
 logic s_axi_arready;

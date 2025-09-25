@@ -29,7 +29,7 @@ class driver extends uvm_driver #(sequence_item);
 
    task run_phase(uvm_phase phase);
       forever begin
-         seq_item_port.try_next_item(s_item);
+         seq_item_port.get_next_item(s_item);
          if (s_item == null) begin
             // idle trans
          end
