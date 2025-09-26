@@ -1,5 +1,6 @@
 `timescale 1ns / 1ns
 
+import test_pkg::*;
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 
@@ -29,10 +30,6 @@ initial begin
   uvm_config_db #(virtual axi_if)::set(null, "*", "axi", axi);
   uvm_config_db #(virtual uart_if)::set(null, "*", "uartif", uartif);
   uvm_config_db #(int)::set(null, "*", "checks_en", 1);
-  axi.reset();
-  #100;
-  axi.set_waddr(4'hC);
-  axi.write_data(32'h0010);
   run_test("base_test");
   /*
   assign rx = uartif.rx;

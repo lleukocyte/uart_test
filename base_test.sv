@@ -25,12 +25,13 @@ class base_test extends uvm_test;
 
     virtual task run_phase(uvm_phase phase);
         phase.raise_objection(this);
+        env_h.reset();
+        seq.randomize();
         seq.start(sequencer_h);
         phase.drop_objection(this);
     endtask
 
     virtual function new (string name = "base_test", uvm_component parent = null);
         super.new(name,parent);
-        `uvm_info("TEST", "base_test constructor called", UVM_LOW)
     endfunction : new
 endclass

@@ -68,8 +68,7 @@ endtask : set_raddr
 
 task automatic read_data(ref logic [31:0] data);
     s_axi_rready = 1'b1;
-    wait(s_axi_rvalid == 1);
-    @(posedge s_axi_aclk);
+    @(negedge s_axi_rvalid);
     data = s_axi_rdata;
     //s_axi_arvalid <= 1'b0;
     s_axi_rready <= 1'b0;

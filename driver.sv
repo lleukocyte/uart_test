@@ -20,10 +20,10 @@ class driver extends uvm_driver #(sequence_item);
    function void build_phase(uvm_phase phase);
       super.build_phase(phase);
       
-      if(!uvm_config_db #(virtual uart_if)::get(null, "*", "uartif", uartif))
+      if(!uvm_config_db #(virtual uart_if)::get(this, "", "uartif", uartif))
         `uvm_fatal("DRIVER", "Failed to get uart interface")
         
-      if(!uvm_config_db #(virtual axi_if)::get(null, "*", "axi", axi))
+      if(!uvm_config_db #(virtual axi_if)::get(this, "", "axi", axi))
         `uvm_fatal("DRIVER", "Failed to get axi interface")
    endfunction
 
@@ -67,8 +67,17 @@ class driver extends uvm_driver #(sequence_item);
                 #BAUDTIME;
                 uartif.rx = 1'b1;
                 #BAUDTIME;
+                `uvm_info("DRIVER", $sformatf("!!!! RX INPUT !!!   %h", 
+                    item.rx_data), UVM_MEDIUM)
             end
         join
    endtask : drive_item
+   
+   task reset();
+        axi.reset();
+        #100;
+        axi.set_waddr(4'hC);
+        axi.write_data(32'h0010);
+   endtask
    
 endclass

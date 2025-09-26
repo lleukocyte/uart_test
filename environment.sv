@@ -27,6 +27,11 @@ class env extends uvm_env;
 
    function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
-        agent_h.monitor_h.item_ap.connect(scoreboard_h.item_fifo.analysis_export);
+        agent_h.monitor_h.rx_ap.connect(scoreboard_h.rx_fifo.analysis_export);
+        agent_h.monitor_h.tx_ap.connect(scoreboard_h.tx_fifo.analysis_export);
    endfunction : connect_phase
+   
+   task reset();
+        agent_h.driver_h.reset();
+   endtask
 endclass

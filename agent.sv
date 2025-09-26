@@ -11,6 +11,10 @@ class agent extends uvm_agent;
     
     uvm_active_passive_enum is_active = UVM_ACTIVE;
     
+    function new (string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction : new
+    
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         monitor_h = monitor::type_id::create("monitor_h",this);

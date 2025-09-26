@@ -13,7 +13,8 @@ class simple_sequence extends uvm_sequence #(sequence_item);
     endfunction
     
     virtual task body();
-        repeat(count)
-        `uvm_do(req)
+        repeat(count) begin
+            `uvm_do(req)
+        end
     endtask : body
 endclass : simple_sequence

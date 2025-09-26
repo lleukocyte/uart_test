@@ -5,14 +5,14 @@ import uvm_pkg::*;
 
 class sequence_item extends uvm_sequence_item;
     `uvm_object_utils(sequence_item)
-    rand bit [7:0] rx_data;
-    rand bit [7:0] tx_data;
-    bit [7:0] rx_rcvd;
-    bit [7:0] tx_rcvd;
-    bit parity;
-    bit calc_parity;
+    rand logic [7:0] rx_data;
+    rand logic [7:0] tx_data;
+    logic [7:0] rx_rcvd;
+    logic [7:0] tx_rcvd;
+    logic parity;
+    logic calc_parity;
     
-    function new(string name);
+    function new(string name = "my_object");
         super.new(name);
     endfunction
 endclass : sequence_item
